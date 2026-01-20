@@ -1,0 +1,61 @@
+:root {
+  --bg1: #2b2a2e;
+  --bg2: #1f1e22;
+  --bg3: #111114;
+  --glass: rgba(35, 35, 40, 0.7);
+  --accent: #b9ff7c;
+}
+* { box-sizing: border-box; font-family: "Inter", "Segoe UI", sans-serif; }
+body {
+  margin: 0;
+  color: #e7e5e8;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+}
+.app-shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+.sidebar {
+  background: rgba(20, 20, 24, 0.8);
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+.logo { font-size: 22px; font-weight: 700; margin-bottom: 30px; }
+.logo span { color: var(--accent); }
+nav a { display: block; padding: 10px 14px; color: #e7e5e8; text-decoration: none; margin-bottom: 8px; border-radius: 12px; }
+nav a:hover { background: rgba(255,255,255,0.06); }
+.content { padding: 30px; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.user { background: rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 12px; }
+.cards, .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+.glass, .card {
+  background: var(--glass);
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+}
+.right-panel { position: fixed; right: 30px; top: 120px; width: 280px; display: grid; gap: 16px; }
+.events { max-height: 320px; overflow: auto; }
+.form { margin-top: 24px; display: grid; gap: 10px; max-width: 420px; }
+input, select, button {
+  background: rgba(25,25,30,0.8);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #e7e5e8;
+}
+button { background: rgba(115, 168, 86, 0.85); color: #0e150f; font-weight: 600; cursor: pointer; }
+button:hover { filter: brightness(1.05); }
+.login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+.login-card {
+  background: var(--glass);
+  padding: 40px;
+  border-radius: 20px;
+  width: 360px;
+  text-align: center;
+}
+.login-card form { display: grid; gap: 12px; }
+.link { color: var(--accent); text-decoration: none; }

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="header">
+  <div>
+    <h2>Automação & Integrações</h2>
+    <p>Conecte Tuya, SmartThings e outros hubs por cabana.</p>
+  </div>
+</section>
+<section class="grid" id="integrations-grid"></section>
+<section class="glass form">
+  <h3>Adicionar integração</h3>
+  <select id="integration-provider">
+    <option>Tuya</option>
+    <option>SmartThings</option>
+  </select>
+  <input id="integration-username" placeholder="Usuário" />
+  <input id="integration-password" placeholder="Senha" type="password" />
+  <button onclick="window.createIntegration()">Conectar</button>
+</section>
+<script>
+  window.renderIntegrations();
+</script>
+{% endblock %}
