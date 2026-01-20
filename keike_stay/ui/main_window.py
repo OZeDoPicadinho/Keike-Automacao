@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from datetime import datetime, timedelta
+import random
 from typing import Callable, Dict, List, Optional
 
 from PySide6.QtCore import Qt, QTimer, Signal
@@ -22,6 +23,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QSpinBox,
     QStackedWidget,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -33,6 +35,32 @@ from keike_stay.ui.helpers import cabin_pixmap
 
 def format_dt(value: datetime) -> str:
     return value.strftime("%d/%m/%Y %H:%M")
+
+
+def create_person_dialog(parent: QWidget, state: AppState) -> Optional[Person]:
+    dialog = QDialog(parent)
+    dialog.setWindowTitle("Nova Pessoa")
+    layout = QVBoxLayout(dialog)
+    name_input = QLineEdit()
+    name_input.setPlaceholderText("Nome completo")
+    role_input = QComboBox()
+    role_input.addItems(["Hóspede", "Equipe", "Visita"])
+    save_button = QPushButton("Salvar")
+    save_button.setObjectName("primaryButton")
+    save_button.clicked.connect(dialog.accept)
+    layout.addWidget(name_input)
+    layout.addWidget(role_input)
+    layout.addWidget(save_button)
+    if dialog.exec():
+        if name_input.text().strip():
+            new_person = Person(
+                id=state.next_id(state.people),
+                name=name_input.text().strip(),
+                role=role_input.currentText(),
+            )
+            state.people.append(new_person)
+            return new_person
+    return None
 
 
 class GlassCard(QFrame):
@@ -352,6 +380,10 @@ class CabinDetailPage(QWidget):
         self.last_guest.setObjectName("cardMeta")
         detail_layout.addWidget(self.last_guest)
 
+        self.device_info = QLabel("Facial: - | LPR: -")
+        self.device_info.setObjectName("cardMeta")
+        detail_layout.addWidget(self.device_info)
+
         self.quick_reservation = QPushButton("Reserva rápida")
         self.quick_reservation.setObjectName("primaryButton")
         detail_layout.addWidget(self.quick_reservation)
@@ -362,10 +394,12 @@ class CabinDetailPage(QWidget):
 
         self.edit_button = QPushButton("Editar Cabana")
         self.edit_button.setObjectName("secondaryButton")
+        self.edit_button.clicked.connect(self._edit_cabin)
         detail_layout.addWidget(self.edit_button)
 
         self.delete_button = QPushButton("Deletar Cabana")
         self.delete_button.setObjectName("dangerButton")
+        self.delete_button.clicked.connect(self._delete_cabin)
         detail_layout.addWidget(self.delete_button)
 
         layout.addWidget(self.detail_card, 0, 1, 1, 2)
@@ -384,6 +418,9 @@ class CabinDetailPage(QWidget):
                 )
                 self.automation_buttons["TV"].setChecked(cabin.automations.tv)
                 self.last_guest.setText(f"Último acesso: {cabin.guest}")
+                facial = cabin.terminal_facial or "Não vinculado"
+                lpr = cabin.lpr_terminal or "Não vinculado"
+                self.device_info.setText(f"Facial: {facial} | LPR: {lpr}")
                 return
 
     def _select_cabin(self, item: QListWidgetItem) -> None:
@@ -398,6 +435,53 @@ class CabinDetailPage(QWidget):
             "Ar condicionado"
         ].isChecked()
         self.current_cabin.automations.tv = self.automation_buttons["TV"].isChecked()
+
+    def _edit_cabin(self) -> None:
+        if not self.current_cabin:
+            return
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Editar Cabana")
+        layout = QVBoxLayout(dialog)
+        name_input = QLineEdit(self.current_cabin.name)
+        address_input = QLineEdit(self.current_cabin.address)
+        facial_input = QLineEdit(self.current_cabin.terminal_facial or "")
+        facial_input.setPlaceholderText("Terminal facial")
+        lpr_input = QLineEdit(self.current_cabin.lpr_terminal or "")
+        lpr_input.setPlaceholderText("LPR")
+        save_button = QPushButton("Salvar")
+        save_button.setObjectName("primaryButton")
+        save_button.clicked.connect(dialog.accept)
+        layout.addWidget(name_input)
+        layout.addWidget(address_input)
+        layout.addWidget(facial_input)
+        layout.addWidget(lpr_input)
+        layout.addWidget(save_button)
+        if dialog.exec():
+            self.current_cabin.name = name_input.text().strip() or self.current_cabin.name
+            self.current_cabin.address = address_input.text().strip()
+            self.current_cabin.terminal_facial = facial_input.text().strip() or None
+            self.current_cabin.lpr_terminal = lpr_input.text().strip() or None
+            self.detail_title.setText(self.current_cabin.name)
+            self.device_info.setText(
+                f"Facial: {self.current_cabin.terminal_facial or 'Não vinculado'} | "
+                f"LPR: {self.current_cabin.lpr_terminal or 'Não vinculado'}"
+            )
+
+    def _delete_cabin(self) -> None:
+        if not self.current_cabin:
+            return
+        cabin_id = self.current_cabin.id
+        self.state.cabins = [c for c in self.state.cabins if c.id != cabin_id]
+        self.cabin_list.clear()
+        for cabin in self.state.cabins:
+            item = QListWidgetItem(cabin.name)
+            item.setData(Qt.UserRole, cabin.id)
+            self.cabin_list.addItem(item)
+        self.current_cabin = None
+        self.detail_title.setText("Selecione uma cabana")
+        self.automation_status.setText("")
+        self.last_guest.setText("Último acesso: -")
+        self.device_info.setText("Facial: - | LPR: -")
 
 
 class PeoplePage(QWidget):
@@ -437,6 +521,11 @@ class PeoplePage(QWidget):
         self.group_info.setObjectName("cardMeta")
         detail_layout.addWidget(self.group_info)
 
+        self.edit_button = QPushButton("Editar Pessoa")
+        self.edit_button.setObjectName("secondaryButton")
+        self.edit_button.clicked.connect(self._edit_person)
+        detail_layout.addWidget(self.edit_button)
+
         self.add_button = QPushButton("Adicionar Pessoa")
         self.add_button.setObjectName("primaryButton")
         self.add_button.clicked.connect(self._add_person)
@@ -458,6 +547,7 @@ class PeoplePage(QWidget):
         person = next(p for p in self.state.people if p.id == person_id)
         self.detail_name.setText(person.name)
         self.detail_role.setText(person.role)
+        self.detail_name.setProperty("person_id", person.id)
         if person.visits:
             metrics = ", ".join(
                 f"Cabana {cid}: {count}x" for cid, count in person.visits.items()
@@ -475,13 +565,25 @@ class PeoplePage(QWidget):
             self.group_info.setText("")
 
     def _add_person(self) -> None:
+        person = create_person_dialog(self, self.state)
+        if person:
+            self._refresh_list()
+            self.detail_name.setText(person.name)
+            self.detail_role.setText(person.role)
+            self.metric.setText("Sem visitas registradas")
+
+    def _edit_person(self) -> None:
+        person_id = self.detail_name.property("person_id")
+        if not person_id:
+            return
+        person = next(p for p in self.state.people if p.id == person_id)
         dialog = QDialog(self)
-        dialog.setWindowTitle("Nova Pessoa")
+        dialog.setWindowTitle("Editar Pessoa")
         layout = QVBoxLayout(dialog)
-        name_input = QLineEdit()
-        name_input.setPlaceholderText("Nome completo")
+        name_input = QLineEdit(person.name)
         role_input = QComboBox()
         role_input.addItems(["Hóspede", "Equipe", "Visita"])
+        role_input.setCurrentText(person.role)
         save_button = QPushButton("Salvar")
         save_button.setObjectName("primaryButton")
         save_button.clicked.connect(dialog.accept)
@@ -489,14 +591,11 @@ class PeoplePage(QWidget):
         layout.addWidget(role_input)
         layout.addWidget(save_button)
         if dialog.exec():
-            if name_input.text().strip():
-                new_person = Person(
-                    id=self.state.next_id(self.state.people),
-                    name=name_input.text().strip(),
-                    role=role_input.currentText(),
-                )
-                self.state.people.append(new_person)
-                self._refresh_list()
+            person.name = name_input.text().strip() or person.name
+            person.role = role_input.currentText()
+            self._refresh_list()
+            self.detail_name.setText(person.name)
+            self.detail_role.setText(person.role)
 
 
 class ReservationPage(QWidget):
@@ -509,10 +608,24 @@ class ReservationPage(QWidget):
         layout = QGridLayout(self)
         layout.setSpacing(16)
 
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText(
+            "Buscar por código, pessoa ou período"
+        )
+        self.search_input.textChanged.connect(self._refresh_list)
+        layout.addWidget(self.search_input, 0, 0, 1, 1)
+
+        self.tabs = QTabWidget()
+        self.tabs.setObjectName("reservationTabs")
         self.reservation_list = QListWidget()
         self.reservation_list.setObjectName("reservationList")
         self.reservation_list.itemClicked.connect(self._show_detail)
-        layout.addWidget(self.reservation_list, 0, 0, 2, 1)
+        self.finished_list = QListWidget()
+        self.finished_list.setObjectName("reservationFinishedList")
+        self.finished_list.itemClicked.connect(self._show_detail)
+        self.tabs.addTab(self.reservation_list, "Ativas")
+        self.tabs.addTab(self.finished_list, "Finalizadas")
+        layout.addWidget(self.tabs, 1, 0, 1, 1)
 
         self.detail_card = GlassCard()
         detail_layout = QVBoxLayout(self.detail_card)
@@ -529,18 +642,29 @@ class ReservationPage(QWidget):
         self.new_button.clicked.connect(self._new_reservation)
         detail_layout.addWidget(self.new_button)
 
-        layout.addWidget(self.detail_card, 0, 1, 1, 2)
+        layout.addWidget(self.detail_card, 0, 1, 2, 2)
         self._refresh_list()
 
     def _refresh_list(self) -> None:
+        query = self.search_input.text().lower()
         self.reservation_list.clear()
+        self.finished_list.clear()
+        now = datetime.now()
         for reservation in self.state.reservations:
             person = next(p for p in self.state.people if p.id == reservation.person_id)
-            item = QListWidgetItem(
-                f"{person.name} · {reservation.code} · {reservation.status}"
+            cabin = next(c for c in self.state.cabins if c.id == reservation.cabin_id)
+            label = (
+                f"{person.name} · {reservation.code} · {format_dt(reservation.start_at)}"
             )
+            if query and query not in label.lower() and query not in cabin.name.lower():
+                continue
+            status = "Finalizada" if reservation.end_at < now else reservation.status
+            item = QListWidgetItem(f"{person.name} · {reservation.code} · {status}")
             item.setData(Qt.UserRole, reservation.id)
-            self.reservation_list.addItem(item)
+            if reservation.end_at < now:
+                self.finished_list.addItem(item)
+            else:
+                self.reservation_list.addItem(item)
 
     def _show_detail(self, item: QListWidgetItem) -> None:
         reservation_id = item.data(Qt.UserRole)
@@ -567,29 +691,119 @@ class ReservationPage(QWidget):
         start_date.setCalendarPopup(True)
         end_date.setCalendarPopup(True)
 
+        warning = QLabel("")
+        warning.setObjectName("statusOff")
+
+        group_toggle = QPushButton("Adicionar pessoas ao grupo?")
+        group_toggle.setCheckable(True)
+        group_toggle.setObjectName("secondaryButton")
+        group_list = QListWidget()
+        group_list.setSelectionMode(QListWidget.MultiSelection)
+        for person in self.state.people:
+            item = QListWidgetItem(person.name)
+            item.setData(Qt.UserRole, person.id)
+            group_list.addItem(item)
+        group_list.setVisible(False)
+
         add_person_button = QPushButton("Cadastro rápido de pessoa")
         add_person_button.setObjectName("linkButton")
+
+        add_group_button = QPushButton("Adicionar pessoa ao grupo")
+        add_group_button.setObjectName("linkButton")
 
         save_button = QPushButton("Salvar Reserva")
         save_button.setObjectName("primaryButton")
         save_button.clicked.connect(dialog.accept)
+
+        def refresh_warning() -> None:
+            cabin_id = cabin_select.currentData()
+            start = datetime.combine(start_date.date().toPython(), datetime.min.time())
+            end = datetime.combine(end_date.date().toPython(), datetime.min.time())
+            conflict = any(
+                res.cabin_id == cabin_id
+                and not (end <= res.start_at or start >= res.end_at)
+                for res in self.state.reservations
+            )
+            if conflict:
+                warning.setText("Cabana ocupada no período selecionado.")
+                save_button.setEnabled(False)
+            else:
+                warning.setText("")
+                save_button.setEnabled(True)
+
+        def add_person_quick() -> None:
+            new_person = create_person_dialog(self, self.state)
+            if new_person:
+                person_select.addItem(new_person.name, new_person.id)
+                person_select.setCurrentText(new_person.name)
+                item = QListWidgetItem(new_person.name)
+                item.setData(Qt.UserRole, new_person.id)
+                group_list.addItem(item)
+
+        def toggle_group() -> None:
+            group_list.setVisible(group_toggle.isChecked())
+            add_group_button.setVisible(group_toggle.isChecked())
+
+        def add_group_person() -> None:
+            new_person = create_person_dialog(self, self.state)
+            if new_person:
+                item = QListWidgetItem(new_person.name)
+                item.setData(Qt.UserRole, new_person.id)
+                group_list.addItem(item)
+
+        add_person_button.clicked.connect(add_person_quick)
+        add_group_button.clicked.connect(add_group_person)
+        group_toggle.clicked.connect(toggle_group)
+
+        cabin_select.currentIndexChanged.connect(refresh_warning)
+        start_date.dateChanged.connect(refresh_warning)
+        end_date.dateChanged.connect(refresh_warning)
+        refresh_warning()
 
         layout.addWidget(cabin_select)
         layout.addWidget(person_select)
         layout.addWidget(add_person_button)
         layout.addWidget(start_date)
         layout.addWidget(end_date)
+        layout.addWidget(warning)
+        layout.addWidget(group_toggle)
+        layout.addWidget(group_list)
+        layout.addWidget(add_group_button)
         layout.addWidget(save_button)
 
         if dialog.exec():
+            reservation_id = self.state.next_id(self.state.reservations)
+            code = ""
+            while True:
+                code = f"{random.randint(0, 999999999):09d}"
+                if not any(r.code == code for r in self.state.reservations):
+                    break
+            start_at = datetime.combine(
+                start_date.date().toPython(), datetime.min.time()
+            )
+            end_at = datetime.combine(end_date.date().toPython(), datetime.min.time())
             new_reservation = Reservation(
-                id=self.state.next_id(self.state.reservations),
+                id=reservation_id,
                 cabin_id=cabin_select.currentData(),
                 person_id=person_select.currentData(),
-                start_at=start_date.date().toPython(),
-                end_at=end_date.date().toPython(),
-                code=str(100000000 + self.state.next_id(self.state.reservations)),
+                start_at=start_at,
+                end_at=end_at,
+                code=code,
             )
+            if group_toggle.isChecked():
+                group_ids = [
+                    group_list.item(i).data(Qt.UserRole)
+                    for i in range(group_list.count())
+                    if group_list.item(i).isSelected()
+                ]
+                new_reservation.group_people = group_ids
+                for pid in group_ids:
+                    person = next(p for p in self.state.people if p.id == pid)
+                    person.group_of = new_reservation.person_id
+            cabin = next(c for c in self.state.cabins if c.id == new_reservation.cabin_id)
+            for pid in [new_reservation.person_id] + new_reservation.group_people:
+                person = next(p for p in self.state.people if p.id == pid)
+                person.visits[cabin.id] = person.visits.get(cabin.id, 0) + 1
             self.state.reservations.append(new_reservation)
             self._refresh_list()
 
@@ -606,6 +820,7 @@ class DevicesPage(QWidget):
 
         self.device_list = QListWidget()
         self.device_list.setObjectName("deviceList")
+        self.device_list.itemClicked.connect(self._show_device)
         layout.addWidget(self.device_list, 0, 0, 2, 1)
 
         self.detail_card = GlassCard()
@@ -619,6 +834,16 @@ class DevicesPage(QWidget):
         add_button.clicked.connect(self._add_device)
         detail_layout.addWidget(add_button)
 
+        self.edit_button = QPushButton("Editar Dispositivo")
+        self.edit_button.setObjectName("secondaryButton")
+        self.edit_button.clicked.connect(self._edit_device)
+        detail_layout.addWidget(self.edit_button)
+
+        self.delete_button = QPushButton("Deletar Dispositivo")
+        self.delete_button.setObjectName("dangerButton")
+        self.delete_button.clicked.connect(self._delete_device)
+        detail_layout.addWidget(self.delete_button)
+
         self.access_title = QLabel("Níveis de acesso")
         self.access_title.setObjectName("sectionTitle")
         detail_layout.addWidget(self.access_title)
@@ -629,12 +854,17 @@ class DevicesPage(QWidget):
 
         layout.addWidget(self.detail_card, 0, 1, 1, 2)
         self._refresh_list()
+        self._current_device_id: Optional[int] = None
 
     def _refresh_list(self) -> None:
         self.device_list.clear()
         for device in self.state.devices:
             item = QListWidgetItem(f"{device.name} · {device.kind}")
+            item.setData(Qt.UserRole, device.id)
             self.device_list.addItem(item)
+
+    def _show_device(self, item: QListWidgetItem) -> None:
+        self._current_device_id = item.data(Qt.UserRole)
 
     def _add_device(self) -> None:
         dialog = QDialog(self)
@@ -658,6 +888,37 @@ class DevicesPage(QWidget):
             )
             self.state.devices.append(new_device)
             self._refresh_list()
+
+    def _edit_device(self) -> None:
+        if not self._current_device_id:
+            return
+        device = next(d for d in self.state.devices if d.id == self._current_device_id)
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Editar dispositivo")
+        layout = QVBoxLayout(dialog)
+        name_input = QLineEdit(device.name)
+        type_select = QComboBox()
+        type_select.addItems(["Terminal Facial", "LPR"])
+        type_select.setCurrentText(device.kind)
+        save_button = QPushButton("Salvar")
+        save_button.setObjectName("primaryButton")
+        save_button.clicked.connect(dialog.accept)
+        layout.addWidget(name_input)
+        layout.addWidget(type_select)
+        layout.addWidget(save_button)
+        if dialog.exec():
+            device.name = name_input.text().strip() or device.name
+            device.kind = type_select.currentText()
+            self._refresh_list()
+
+    def _delete_device(self) -> None:
+        if not self._current_device_id:
+            return
+        self.state.devices = [
+            d for d in self.state.devices if d.id != self._current_device_id
+        ]
+        self._current_device_id = None
+        self._refresh_list()
 
 
 class AutomationPage(QWidget):
@@ -738,6 +999,18 @@ class UsersPage(QWidget):
         password_input = QLineEdit()
         password_input.setPlaceholderText("Senha")
         password_input.setEchoMode(QLineEdit.Password)
+        confirm_input = QLineEdit()
+        confirm_input.setPlaceholderText("Confirmar senha")
+        confirm_input.setEchoMode(QLineEdit.Password)
+        toggle_button = QPushButton("Ver senha")
+        toggle_button.setObjectName("ghostButton")
+        toggle_button.clicked.connect(
+            lambda: password_input.setEchoMode(
+                QLineEdit.Normal
+                if password_input.echoMode() == QLineEdit.Password
+                else QLineEdit.Password
+            )
+        )
         role_input = QLineEdit()
         role_input.setPlaceholderText("Cargo")
         save_button = QPushButton("Salvar")
@@ -748,9 +1021,13 @@ class UsersPage(QWidget):
         layout.addWidget(phone_input)
         layout.addWidget(username_input)
         layout.addWidget(password_input)
+        layout.addWidget(confirm_input)
+        layout.addWidget(toggle_button)
         layout.addWidget(role_input)
         layout.addWidget(save_button)
         if dialog.exec():
+            if password_input.text() != confirm_input.text():
+                return
             exists = any(
                 user.email == email_input.text()
                 or user.phone == phone_input.text()
