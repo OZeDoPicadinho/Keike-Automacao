@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -10,9 +12,13 @@ app = FastAPI(title="Keike Stay Web")
 
 Base.metadata.create_all(bind=engine)
 
-app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+BASE_DIR = Path(__file__).resolve().parents[2]
+STATIC_DIR = BASE_DIR / "frontend" / "static"
+TEMPLATE_DIR = BASE_DIR / "frontend" / "templates"
 
-templates = Jinja2Templates(directory="frontend/templates")
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
 
 app.include_router(cabins.router)
 app.include_router(people.router)

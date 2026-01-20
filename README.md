@@ -13,5 +13,6 @@ Acesse: `http://127.0.0.1:8000`
 
 ## Observações
 
+- Execute o comando na raiz do repositório para garantir que os templates/estáticos sejam encontrados.
 - Banco padrão: SQLite (`keike_stay.db`).
 - Integrações Tuya/SmartThings ficam salvas na tabela `integration_accounts`.
