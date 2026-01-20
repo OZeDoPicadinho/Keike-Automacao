@@ -7,6 +7,32 @@ async function fetchJSON(url, options) {
   return response.json();
 }
 
+window.handleLogin = function () {
+  const form = document.getElementById('login-form');
+  if (!form) {
+    return;
+  }
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const error = document.getElementById('login-error');
+    error.textContent = '';
+    const payload = {
+      username: document.getElementById('login-username').value,
+      password: document.getElementById('login-password').value
+    };
+    try {
+      await fetchJSON('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      window.location.href = '/dashboard';
+    } catch (err) {
+      error.textContent = err.message;
+    }
+  });
+}
+
 window.renderDashboard = async function () {
   const cards = document.getElementById('dashboard-cards');
   const events = document.getElementById('events-list');
