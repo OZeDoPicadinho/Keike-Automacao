@@ -60,3 +60,9 @@ button:hover { filter: brightness(1.05); }
 .login-card form { display: grid; gap: 12px; }
 .link { color: var(--accent); text-decoration: none; }
 #login-error { color: #d0a3a3; min-height: 18px; }
+.login-hint {
+  margin-top: 18px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+}

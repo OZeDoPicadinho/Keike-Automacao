@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -53,6 +54,27 @@ def seed_admin() -> None:
 @app.get("/")
 def login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
+
+
+@app.post("/login")
+def login_submit(request: Request, username: str = Form(...), password: str = Form(...)):
+    db = SessionLocal()
+    try:
+        user = (
+            db.query(models.User)
+            .filter(models.User.username == username)
+            .filter(models.User.password == password)
+            .first()
+        )
+        if not user:
+            return templates.TemplateResponse(
+                "login.html",
+                {"request": request, "error": "Credenciais inválidas"},
+                status_code=401,
+            )
+    finally:
+        db.close()
+    return RedirectResponse(url="/dashboard", status_code=302)
 
 
 @app.get("/dashboard")

@@ -38,6 +38,7 @@ Acesse: `http://127.0.0.1:8000`
 
 ## Observações
 
+- Login padrão: usuário `admin` e senha `admin@102030`.
 - Execute o comando na raiz do repositório para garantir que os templates/estáticos sejam encontrados.
 - Banco padrão: SQLite (`keike_stay.db`).
 - Integrações Tuya/SmartThings ficam salvas na tabela `integration_accounts`.
