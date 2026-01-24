@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="header">
+  <div>
+    <h2>Usuários</h2>
+    <p>Controle de acesso ao sistema.</p>
+  </div>
+</section>
+<section class="grid" id="users-grid"></section>
+<section class="glass form">
+  <h3>Novo Usuário</h3>
+  <input id="user-name" placeholder="Nome" />
+  <input id="user-email" placeholder="Email" />
+  <input id="user-phone" placeholder="Telefone" />
+  <input id="user-username" placeholder="Usuário" />
+  <input id="user-password" placeholder="Senha" type="password" />
+  <input id="user-role" placeholder="Cargo" />
+  <button onclick="window.createUser()">Salvar</button>
+</section>
+<script>
+  window.renderUsers();
+</script>
+{% endblock %}

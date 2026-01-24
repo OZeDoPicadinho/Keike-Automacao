@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keike Stay · Login</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body class="login">
+  <div class="login-card">
+    <h1>Keike Stay</h1>
+    <p>Experiência premium em hospedagens inteligentes</p>
+    <form id="login-form" action="/login" method="post">
+      <input id="login-username" name="username" type="text" placeholder="Usuário" required />
+      <input id="login-password" name="password" type="password" placeholder="Senha" required />
+      <p id="login-error">{{ error or '' }}</p>
+      <button type="submit">Entrar</button>
+      <a class="link" href="#">Esqueci minha senha</a>
+    </form>
+    <div class="login-hint">
+      <strong>Login padrão:</strong> admin<br />
+      <strong>Senha padrão:</strong> admin@102030
+    </div>
+  </div>
+  <script src="/static/js/app.js"></script>
+  <script>
+    window.handleLogin();
+  </script>
+</body>
+</html>

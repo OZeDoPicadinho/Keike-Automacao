@@ -1,0 +1,1 @@
+"""Keike Stay application package."""

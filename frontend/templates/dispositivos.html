@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="header">
+  <div>
+    <h2>Dispositivos</h2>
+    <p>Gerencie faciais, LPR e acessos.</p>
+  </div>
+</section>
+<section class="grid" id="devices-grid"></section>
+<section class="glass form">
+  <h3>Novo Dispositivo</h3>
+  <input id="device-name" placeholder="Nome" />
+  <select id="device-kind">
+    <option>Terminal Facial</option>
+    <option>LPR</option>
+  </select>
+  <button onclick="window.createDevice()">Salvar</button>
+</section>
+<script>
+  window.renderDevices();
+</script>
+{% endblock %}

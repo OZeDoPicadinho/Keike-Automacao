@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="header">
+  <div>
+    <h2>Reservas</h2>
+    <p>Controle check-in, check-out e disponibilidade.</p>
+  </div>
+</section>
+<section class="grid" id="reservations-grid"></section>
+<section class="glass form">
+  <h3>Nova Reserva</h3>
+  <select id="reservation-cabin"></select>
+  <select id="reservation-person"></select>
+  <input id="reservation-start" type="datetime-local" />
+  <input id="reservation-end" type="datetime-local" />
+  <button onclick="window.createReservation()">Salvar</button>
+  <p id="reservation-warning"></p>
+</section>
+<script>
+  window.renderReservations();
+</script>
+{% endblock %}

@@ -1,0 +1,169 @@
+QWidget {
+    color: #e7e5e8;
+    font-family: "Inter", "Segoe UI", "Roboto";
+    font-size: 13px;
+}
+
+QWidget#mainWindow, QWidget#loginWindow {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+        stop:0 #2b2a2e,
+        stop:0.5 #1f1e22,
+        stop:1 #111114);
+}
+
+QWidget#glassCard {
+    background-color: rgba(32, 32, 36, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+}
+
+QPushButton {
+    background-color: rgba(60, 60, 70, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 8px 14px;
+}
+
+QPushButton:hover {
+    background-color: rgba(90, 90, 100, 0.65);
+}
+
+QPushButton#primaryButton {
+    background-color: rgba(115, 168, 86, 0.85);
+    color: #0e150f;
+    font-weight: 600;
+}
+
+QPushButton#secondaryButton {
+    background-color: rgba(80, 80, 90, 0.6);
+}
+
+QPushButton#dangerButton {
+    background-color: rgba(140, 52, 52, 0.7);
+    color: #f4e9e9;
+}
+
+QPushButton#ghostButton {
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+QPushButton#linkButton {
+    background-color: transparent;
+    border: none;
+    color: #b9ff7c;
+    text-align: left;
+}
+
+QPushButton#sidebarButton {
+    text-align: left;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background-color: rgba(30, 30, 36, 0.3);
+}
+
+QPushButton#sidebarButton:checked {
+    background-color: rgba(140, 200, 94, 0.2);
+    border: 1px solid rgba(156, 255, 123, 0.6);
+    color: #b9ff7c;
+}
+
+QLabel#logoTitle {
+    font-size: 22px;
+    font-weight: 700;
+    color: #b9ff7c;
+}
+
+QLabel#pageTitle {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+QLabel#pageSubtitle {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+QLabel#cardTitle {
+    font-weight: 600;
+}
+
+QLabel#cardSubtitle,
+QLabel#cardMeta {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+QLabel#statusOn {
+    color: #b9ff7c;
+}
+
+QLabel#statusOff {
+    color: #d0a3a3;
+}
+
+QLabel#sectionTitle {
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+QLabel#lprPlate {
+    font-size: 18px;
+    color: #b9ff7c;
+    font-weight: 700;
+}
+
+QLabel#lprStatus {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+QListWidget {
+    background-color: rgba(30, 30, 36, 0.6);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 6px;
+}
+
+QListWidget::item {
+    padding: 6px;
+}
+
+QLabel#loginTitle {
+    font-size: 32px;
+    font-weight: 700;
+}
+
+QLabel#loginSubtitle {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+QLineEdit, QComboBox, QDateEdit {
+    background-color: rgba(25, 25, 30, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 8px 10px;
+}
+
+QFrame#metricBar {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+        stop:0 rgba(115, 168, 86, 0.7),
+        stop:1 rgba(60, 60, 70, 0.3));
+    border-radius: 10px;
+}
+
+QLabel#eventTitle {
+    font-weight: 600;
+}
+
+QLabel#eventSubtitle,
+QLabel#eventTime {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+QLabel#avatarCircle {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+}
+
+QWidget#cabinImage {
+    border-radius: 12px;
+}

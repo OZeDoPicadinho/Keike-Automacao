@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="header">
+  <div>
+    <h2>Bem-vindo ao Keike Stay!</h2>
+    <p>Gerencie e automatize as suas cabanas com controle total.</p>
+  </div>
+  <div class="user">Admin</div>
+</section>
+<section class="cards" id="dashboard-cards"></section>
+<aside class="right-panel">
+  <div class="glass">
+    <h4>LPR PORTÃO</h4>
+    <strong>ABCD123</strong>
+    <span>Portão Aberto Agora</span>
+  </div>
+  <div class="glass events" id="events-list">
+    <h4>ÚLTIMOS EVENTOS</h4>
+  </div>
+</aside>
+<script>
+  window.renderDashboard();
+</script>
+{% endblock %}

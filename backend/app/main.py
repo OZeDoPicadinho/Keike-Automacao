@@ -1,0 +1,112 @@
+from pathlib import Path
+
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+from backend.app.database import Base, SessionLocal, engine
+from backend.app import models
+from backend.app.routers import auth, cabins, devices, events, integrations, people, reservations, users
+
+app = FastAPI(title="Keike Stay Web")
+
+Base.metadata.create_all(bind=engine)
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+STATIC_DIR = BASE_DIR / "frontend" / "static"
+TEMPLATE_DIR = BASE_DIR / "frontend" / "templates"
+
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
+
+app.include_router(cabins.router)
+app.include_router(people.router)
+app.include_router(reservations.router)
+app.include_router(devices.router)
+app.include_router(events.router)
+app.include_router(users.router)
+app.include_router(integrations.router)
+app.include_router(auth.router)
+
+@app.on_event("startup")
+def seed_admin() -> None:
+    db = SessionLocal()
+    try:
+        exists = db.query(models.User).filter(models.User.username == "admin").first()
+        if not exists:
+            admin = models.User(
+                name="Super Admin",
+                email="admin@keike.com",
+                phone="",
+                username="admin",
+                password="admin@102030",
+                role="Super Admin",
+                is_super_admin=True,
+            )
+            db.add(admin)
+            db.commit()
+    finally:
+        db.close()
+
+
+@app.get("/")
+def login(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
+@app.post("/login")
+def login_submit(request: Request, username: str = Form(...), password: str = Form(...)):
+    db = SessionLocal()
+    try:
+        user = (
+            db.query(models.User)
+            .filter(models.User.username == username)
+            .filter(models.User.password == password)
+            .first()
+        )
+        if not user:
+            return templates.TemplateResponse(
+                "login.html",
+                {"request": request, "error": "Credenciais inválidas"},
+                status_code=401,
+            )
+    finally:
+        db.close()
+    return RedirectResponse(url="/dashboard", status_code=302)
+
+
+@app.get("/dashboard")
+def dashboard(request: Request):
+    return templates.TemplateResponse("dashboard.html", {"request": request})
+
+
+@app.get("/cabanas")
+def cabanas(request: Request):
+    return templates.TemplateResponse("cabanas.html", {"request": request})
+
+
+@app.get("/pessoas")
+def pessoas(request: Request):
+    return templates.TemplateResponse("pessoas.html", {"request": request})
+
+
+@app.get("/reservas")
+def reservas(request: Request):
+    return templates.TemplateResponse("reservas.html", {"request": request})
+
+
+@app.get("/dispositivos")
+def dispositivos(request: Request):
+    return templates.TemplateResponse("dispositivos.html", {"request": request})
+
+
+@app.get("/automacao")
+def automacao(request: Request):
+    return templates.TemplateResponse("automacao.html", {"request": request})
+
+
+@app.get("/usuarios")
+def usuarios(request: Request):
+    return templates.TemplateResponse("usuarios.html", {"request": request})

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="header">
+  <div>
+    <h2>Cabanas</h2>
+    <p>Edite dados, automações e integrações de cada cabana.</p>
+  </div>
+</section>
+<section class="grid" id="cabins-grid"></section>
+<section class="glass form" id="cabin-form">
+  <h3>Nova Cabana</h3>
+  <input id="cabin-name" placeholder="Nome" />
+  <input id="cabin-address" placeholder="Endereço" />
+  <input id="cabin-photo" placeholder="URL da foto" />
+  <input id="cabin-facial" placeholder="Terminal facial (ex: DS-K1T342MWX)" />
+  <input id="cabin-lpr" placeholder="LPR (ex: iDS-2CD7A46G0_P-IZHSY)" />
+  <button onclick="window.createCabin()">Salvar</button>
+</section>
+<script>
+  window.renderCabins();
+</script>
+{% endblock %}

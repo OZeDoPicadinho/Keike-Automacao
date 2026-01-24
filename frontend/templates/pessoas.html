@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="header">
+  <div>
+    <h2>Pessoas</h2>
+    <p>Gerencie hóspedes, equipe e visitas.</p>
+  </div>
+</section>
+<section class="grid" id="people-grid"></section>
+<section class="glass form">
+  <h3>Nova Pessoa</h3>
+  <input id="person-name" placeholder="Nome completo" />
+  <select id="person-role">
+    <option>Hóspede</option>
+    <option>Equipe</option>
+    <option>Visita</option>
+  </select>
+  <input id="person-phone" placeholder="Telefone" />
+  <input id="person-email" placeholder="Email" />
+  <button onclick="window.createPerson()">Salvar</button>
+</section>
+<script>
+  window.renderPeople();
+</script>
+{% endblock %}
